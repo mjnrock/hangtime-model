@@ -101,7 +101,6 @@ CREATE TABLE Hangtime.[User] (
 	UserID INT IDENTITY(1,1) PRIMARY KEY,
 
 	Username VARCHAR(255) NOT NULL,
-	Quad AS RIGHT(CONCAT('0000', FLOOR(9999 * RAND(CHECKSUM(NEWID())))), 4),
 	[Password] VARCHAR(255) NOT NULL,
 	Email VARCHAR(255) NULL,
 	LastLoginDateTimeUTC DATETIME2(3) NULL DEFAULT SYSUTCDATETIME(),
@@ -170,6 +169,7 @@ CREATE TABLE Hangtime.Place (
 
 CREATE TABLE Hangtime.Game (
 	GameID INT IDENTITY(1,1) PRIMARY KEY,
+	HostUserID INT NULL FOREIGN KEY REFERENCES Hangtime.[User] (UserID),
 	ActivityID INT NOT NULL FOREIGN KEY REFERENCES Hangtime.Activity (ActivityID),
 
 	Location GEOGRAPHY NOT NULL,
@@ -186,7 +186,6 @@ CREATE TABLE Hangtime.Game (
 CREATE TABLE Hangtime.GameDetail (
 	GameDetailID INT IDENTITY(1,1) PRIMARY KEY,
 	GameID INT NOT NULL FOREIGN KEY REFERENCES Hangtime.Game (GameID),
-	HostUserID INT NOT NULL FOREIGN KEY REFERENCES Hangtime.[User] (UserID),
 	PlaceID INT NULL FOREIGN KEY REFERENCES Hangtime.Place (PlaceID),
 	
 	Title NVARCHAR(50) NULL,
@@ -214,6 +213,7 @@ VALUES
 	('PLACE', 'Place'),
 	('GAMEX', 'Game');
 
+SELECT * FROM Hangtime.Activity;
 EXEC Hangtime.CreateUser
 	'MrFancypants',
 	'Cat',
@@ -227,6 +227,8 @@ EXEC Hangtime.CreateUser
 DECLARE @StartDateTimeUTC DATETIME2(3) = DATEADD(HOUR, 4, SYSUTCDATETIME())
 --	Lake Orion, MI 48362
 EXEC Hangtime.CreateGame
+	'mrfancypants',
+	1,
 	'BBALL',
 	1,
 	42.778010042,
@@ -236,6 +238,8 @@ EXEC Hangtime.CreateGame
 	
 --	Lake Orion, MI 48362
 EXEC Hangtime.CreateGame
+	'mrfancypants',
+	1,
 	'HOCKY',
 	1,
 	42.778010042,
@@ -245,6 +249,8 @@ EXEC Hangtime.CreateGame
 	
 --	Ypsilanti, MI 48197
 EXEC Hangtime.CreateGame
+	'ahainen',
+	1,
 	'BBALL',
 	1,
 	42.1966290,
@@ -254,6 +260,8 @@ EXEC Hangtime.CreateGame
 	
 --	Ypsilanti, MI 48197
 EXEC Hangtime.CreateGame
+	'ahainen',
+	1,
 	'BBALL',
 	1,
 	42.1966290,
@@ -263,9 +271,34 @@ EXEC Hangtime.CreateGame
 	
 --	Ypsilanti, MI 48197
 EXEC Hangtime.CreateGame
+	'ahainen',
+	1,
 	'HOCKY',
 	1,
 	42.1966290,
 	-83.6135570,
 	@StartDateTimeUTC,
 	DEFAULT
+
+SELECT
+	*
+FROM
+	Hangtime.Game
+
+UPDATE Hangtime.Game
+SET
+	StartDateTimeUTC = SYSUTCDATETIME(),
+	LastCheckinDateTimeUTC = SYSUTCDATETIME()
+
+DELETE FROM Hangtime.GameDetail
+INSERT INTO Hangtime.GameDetail (GameID)
+SELECT
+	GameID
+FROM
+	Hangtime.Game
+
+UPDATE Hangtime.GameDetail
+SET
+	Title = 'Shooty Hoops',
+	[Description] = 'Shootin'' some scrud, ya'' heard? #Perdverts',
+	Tags = '3v3,beer-league,mens,fatties'
