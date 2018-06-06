@@ -35,6 +35,26 @@ WHERE
 	s.name = @Schema
 EXEC(@SQL);
 
+SET @SQL = '';
+SELECT
+	@SQL = @SQL + 'DROP PROCEDURE [' + routine_schema + '].[' + routine_name + ']'
+FROM 
+    information_schema.routines
+WHERE
+	routine_schema = @Schema
+	AND routine_type = 'PROCEDURE'
+EXEC(@SQL);
+
+SET @SQL = '';
+SELECT
+	@SQL = @SQL + 'DROP FUNCTION [' + routine_schema + '].[' + routine_name + ']'
+FROM 
+    information_schema.routines
+WHERE
+	routine_schema = @Schema
+	AND routine_type = 'FUNCTION'
+EXEC(@SQL);
+
 
 --	==============================================
 --		TABLES
@@ -42,8 +62,8 @@ EXEC(@SQL);
 CREATE TABLE Hangtime.Activity (
 	ActivityID INT IDENTITY(1,1) PRIMARY KEY,
 
-	Code VARCHAR(5) NOT NULL,
-	Label VARCHAR(100) NOT NULL,
+	Code VARCHAR(255) NOT NULL,
+	Label VARCHAR(255) NOT NULL,
 	[Description] VARCHAR(255) NULL,
 
 	UUID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
@@ -55,8 +75,8 @@ CREATE TABLE Hangtime.Activity (
 CREATE TABLE Hangtime.RatingType (
 	RatingTypeID INT IDENTITY(1,1) PRIMARY KEY,
 
-	Code VARCHAR(5) NOT NULL,
-	Label VARCHAR(100) NOT NULL,
+	Code VARCHAR(255) NOT NULL,
+	Label VARCHAR(255) NOT NULL,
 	[Description] VARCHAR(255) NULL,
 
 	UUID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
@@ -68,8 +88,8 @@ CREATE TABLE Hangtime.RatingType (
 CREATE TABLE Hangtime.RatingSet (
 	RatingSetID INT IDENTITY(1,1) PRIMARY KEY,
 
-	Code VARCHAR(5) NOT NULL,
-	Label VARCHAR(100) NOT NULL,
+	Code VARCHAR(255) NOT NULL,
+	Label VARCHAR(255) NOT NULL,
 	[Description] VARCHAR(255) NULL,
 
 	UUID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
@@ -81,8 +101,8 @@ CREATE TABLE Hangtime.Rating (
 	RatingID INT IDENTITY(1,1) PRIMARY KEY,
 	RatingSetID INT NOT NULL FOREIGN KEY REFERENCES Hangtime.RatingSet (RatingSetID),
 
-	Code VARCHAR(5) NOT NULL,
-	Label VARCHAR(100) NOT NULL,
+	Code VARCHAR(255) NOT NULL,
+	Label VARCHAR(255) NOT NULL,
 	[Description] VARCHAR(255) NULL,
 
 	TextValue VARCHAR(255) NOT NULL,
@@ -154,8 +174,8 @@ CREATE TABLE Hangtime.Place (
 	Address1 VARCHAR(255) NULL,
 	Address2 VARCHAR(255) NULL,
 	City VARCHAR(255) NULL,
-	[State] VARCHAR(2) NULL,
-	Zip5 VARCHAR(5) NULL,
+	[State] VARCHAR(255) NULL,
+	Zip5 VARCHAR(255) NULL,
 	Country VARCHAR(255) NULL,
 
 	Location GEOGRAPHY,
@@ -197,108 +217,3 @@ CREATE TABLE Hangtime.GameDetail (
 	ModifiedDateTimeUTC DATETIME2(3) NOT NULL DEFAULT SYSUTCDATETIME(),
 	DeactivatedDateTimeUTC DATETIME2(3) NULL
 );
-
---	==============================================
---		SEEDING
---	==============================================
-INSERT INTO Hangtime.Activity (Code, Label)
-VALUES
-	('BBALL', 'Basketball'),
-	('HOCKY', 'Hockey'),
-	('TENIS', 'Tennis');
-	
-INSERT INTO Hangtime.RatingType (Code, Label)
-VALUES
-	('USERX', 'User'),
-	('PLACE', 'Place'),
-	('GAMEX', 'Game');
-
-SELECT * FROM Hangtime.Activity;
-EXEC Hangtime.CreateUser
-	'MrFancypants',
-	'Cat',
-	'matt@kiszka.cat'
-
-EXEC Hangtime.CreateUser
-	'ahainen',
-	'Cat',
-	'andrew@butters.cat'
-
-DECLARE @StartDateTimeUTC DATETIME2(3) = DATEADD(HOUR, 4, SYSUTCDATETIME())
---	Lake Orion, MI 48362
-EXEC Hangtime.CreateGame
-	'mrfancypants',
-	1,
-	'BBALL',
-	1,
-	42.778010042,
-	-83.2666570,
-	@StartDateTimeUTC,
-	DEFAULT
-	
---	Lake Orion, MI 48362
-EXEC Hangtime.CreateGame
-	'mrfancypants',
-	1,
-	'HOCKY',
-	1,
-	42.778010042,
-	-83.2666570,
-	@StartDateTimeUTC,
-	DEFAULT
-	
---	Ypsilanti, MI 48197
-EXEC Hangtime.CreateGame
-	'ahainen',
-	1,
-	'BBALL',
-	1,
-	42.1966290,
-	-83.6135570,
-	@StartDateTimeUTC,
-	DEFAULT
-	
---	Ypsilanti, MI 48197
-EXEC Hangtime.CreateGame
-	'ahainen',
-	1,
-	'BBALL',
-	1,
-	42.1966290,
-	-83.6135570,
-	@StartDateTimeUTC,
-	DEFAULT
-	
---	Ypsilanti, MI 48197
-EXEC Hangtime.CreateGame
-	'ahainen',
-	1,
-	'HOCKY',
-	1,
-	42.1966290,
-	-83.6135570,
-	@StartDateTimeUTC,
-	DEFAULT
-
-SELECT
-	*
-FROM
-	Hangtime.Game
-
-UPDATE Hangtime.Game
-SET
-	StartDateTimeUTC = SYSUTCDATETIME(),
-	LastCheckinDateTimeUTC = SYSUTCDATETIME()
-
-DELETE FROM Hangtime.GameDetail
-INSERT INTO Hangtime.GameDetail (GameID)
-SELECT
-	GameID
-FROM
-	Hangtime.Game
-
-UPDATE Hangtime.GameDetail
-SET
-	Title = 'Shooty Hoops',
-	[Description] = 'Shootin'' some scrud, ya'' heard? #Perdverts',
-	Tags = '3v3,beer-league,mens,fatties'

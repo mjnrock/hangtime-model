@@ -34,3 +34,23 @@ FROM
 WHERE
 	s.name = @Schema
 EXEC(@SQL);
+
+SET @SQL = '';
+SELECT
+	@SQL = @SQL + 'DROP PROCEDURE [' + routine_schema + '].[' + routine_name + ']'
+FROM 
+    information_schema.routines
+WHERE
+	routine_schema = @Schema
+	AND routine_type = 'PROCEDURE'
+EXEC(@SQL);
+
+SET @SQL = '';
+SELECT
+	@SQL = @SQL + 'DROP FUNCTION [' + routine_schema + '].[' + routine_name + ']'
+FROM 
+    information_schema.routines
+WHERE
+	routine_schema = @Schema
+	AND routine_type = 'FUNCTION'
+EXEC(@SQL);
