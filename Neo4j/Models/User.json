@@ -1,0 +1,5 @@
+{
+	Username: STRING,
+	Status: ENUM::UserStatus,
+	LastLogin: TIMESTAMP
+}
