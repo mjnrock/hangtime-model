@@ -1,0 +1,6 @@
+{
+	Sender: STRING,
+	Receiver: STRING,	// Should be a Group
+	Payload: STRING,
+	Timestamp: TIMESTAMP
+}
